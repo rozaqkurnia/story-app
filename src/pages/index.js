@@ -3,8 +3,27 @@ import AppLayout from "@/components/Layouts/AppLayout"
 import Hero from "@/components/Hero"
 import Link from "next/link"
 import LyricsCard from "@/components/LyricsCard"
+import axios from "@/lib/axios"
 
-const Home = () => {
+export async function getServerSideProps(ctx) {
+    const { res } = ctx
+    res.setHeader(
+        'Cache-Control',
+        'public, s-maxage=10, stale-while-revalidate=59',
+    );
+
+    const response = await axios.get('/api/resources')
+
+    return {
+        props: {
+            songs: response.data.data.songs,
+            genres: response.data.data.genres,
+            artists: response.data.data.artists,
+        },
+    }
+}
+
+const Home = ({ songs, genres, artists }) => {
     return (
         <AppLayout>
             <Head>
@@ -20,20 +39,25 @@ const Home = () => {
                         </Link>
                     </div>
                     {/* Iterate Song */}
-                    <LyricsCard />
+                    {songs.map((song, index) => (
+                        <LyricsCard song={song} key={index} />
+                    ))}
                 </div>
                 <div className="lg:w-1/3 lg:flex-none px-2 lg:px-4 overflow-hidden">
                     <div className="my-4 grid grid-cols-2 gap-3">
                         {/* Iterate genres */}
-                        <div className="h-24 rounded-md shadow-lg grid items-center hover:opacity-80 bg-white dark:bg-gray-800">
-                            <a className="text-center">Pop</a>
-                        </div>
-                        <div className="h-24 rounded-md shadow-lg grid items-center hover:opacity-80 bg-white dark:bg-gray-800">
-                            <a className="text-center">Rock</a>
-                        </div>
-                        <div className="h-24 rounded-md shadow-lg col-span-2 grid items-center hover:opacity-80 bg-white dark:bg-gray-800">
-                            <a className="text-center">Alternative</a>
-                        </div>
+                        {genres.map((genre, index) => (
+                            <div key={index} className={`h-24 rounded-md shadow-lg ${index%3==0 ? 'col-span-2' : ''} grid items-center hover:opacity-80 bg-white dark:bg-gray-800`}>
+                                <Link
+                                    href={{
+                                        pathname: 'genre/[slug]',
+                                        query: { slug: genre.slug },
+                                    }}
+                                >
+                                    <a className="text-center">{genre.name}</a>
+                                </Link>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </section>
@@ -41,9 +65,16 @@ const Home = () => {
                 <div className="mb-12">
                     <div className="flex-justify-center">
                         {/* Iterate Artist */}
-                        <a href="" className="inline-block ml-2 tracing-wide text-xs font-medium title-font py-0.5 px-1.5 border-indigo-500 uppercase bg-white text-indigo-500">Artist</a>
-                        <a href="" className="inline-block ml-2 tracing-wide text-xs font-medium title-font py-0.5 px-1.5 border-indigo-500 uppercase bg-white text-indigo-500">Composer</a>
-                        <a href="" className="inline-block ml-2 tracing-wide text-xs font-medium title-font py-0.5 px-1.5 border-indigo-500 uppercase bg-white text-indigo-500">Songwriter</a>
+                        {artists.map((artist, index) => (
+                            <Link
+                                href={{
+                                    pathname: 'artist/[slug]',
+                                    query: { slug: artist.slug }
+                                }}
+                            >
+                                <a className="inline-block ml-2 tracing-wide text-xs font-medium title-font py-0.5 px-1.5 border-indigo-500 uppercase bg-white text-indigo-500">{artist.name}</a>
+                            </Link>
+                        ))}
                     </div>
                 </div>
                 <div className="mb-12">

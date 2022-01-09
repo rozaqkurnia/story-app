@@ -12,7 +12,7 @@ const Navigation = ({ user }) => {
     const [open, setOpen] = useState(false)
 
     return (
-        <nav clasName="bg-white shadow dark:bg-gray-800">
+        <nav className="bg-white shadow dark:bg-gray-800">
             <div className="container px-6 py-3 mx-auto md:flex">
                 <div className="flex items-center justify-between">
                     <div>
